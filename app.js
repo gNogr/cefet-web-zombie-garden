@@ -23,12 +23,13 @@ import zombies from './routes/zombies.js'
 
 
 const app = express()
-const __dirname = new URL('.', import.meta.url).pathname
+//const __dirname = new URL('.', import.meta.url).pathname
+const __dirname = './'
 
 // configura a pasta que contém as views e o handlebars como templating engine
-app.set('views', `${__dirname}/views`)
+app.set('views', `${__dirname}views`)
 app.set('view engine', 'hbs')
-hbs.registerPartials(`${__dirname}/views/partials`, console.error)
+hbs.registerPartials(`${__dirname}views/partials`, console.error)
 app.set('json spaces', 2);
 
 // possibilita enviar um DELETE via formulário,
@@ -88,10 +89,11 @@ if (app.get('env') === 'development') {
 // handler de erros de ambiente de produção
 // não mostra a stack de erros pro usuário
 app.use((err, req, res, next) => {
+  const message = err.friendlyMessage ? [err.friendlyMessage, err.message].join('. ') : err.message
   res.status(err.status || 500)
   res.render('error', {
-    message: err.friendlyMessage ?? err.message,
-    error: {}
+    message: message,
+    error: err
   })
 })
 

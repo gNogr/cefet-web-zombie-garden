@@ -81,15 +81,38 @@ router.get('/new/', (req, res) => {
 })
 
 
-/* POST registra uma nova pessoa */
+// POST registra uma nova pessoa 
 // Exercício 1: IMPLEMENTAR AQUI
 // Dentro da callback de tratamento da rota:
 //   1. Fazer a query de INSERT no banco
 //   2. Redirecionar para a rota de listagem de pessoas
 //      - Em caso de sucesso do INSERT, colocar uma mensagem feliz
 //      - Em caso de erro do INSERT, colocar mensagem vermelhinha
+router.post('/', async (req, res) => {
+  const personName = req.body.name;
 
+  if (!personName) {
+    req.flash('error', 'Nenhum nome de pessoa foi passado!')
+    res.redirect('/')
+    return;
+  }
 
+  try {
+    const [result] = await db.execute(`INSERT INTO \`zombies\`.\`person\` (\`id\`, \`name\`, \`alive\`, \`eatenBy\`) VALUES (NULL, "${personName}", 1, NULL);`)
+    if (result.affectedRows !== 1) {
+      req.flash('error', 'Pessoa não pôde ser inserida >:c')
+    } else {
+      req.flash('success', 'A pessoa foi adicionada. :)')
+    }
+    
+  } catch (error) {
+    req.flash('error', `Erro desconhecido. Descrição: ${error}`)
+
+  } finally {
+    res.redirect('/people')
+  }
+
+})
 /* DELETE uma pessoa */
 // Exercício 2: IMPLEMENTAR AQUI
 // Dentro da callback de tratamento da rota:
@@ -97,6 +120,34 @@ router.get('/new/', (req, res) => {
 //   2. Redirecionar para a rota de listagem de pessoas
 //      - Em caso de sucesso do INSERT, colocar uma mensagem feliz
 //      - Em caso de erro do INSERT, colocar mensagem vermelhinha
+
+router.delete('/:id', async (req, res) => {
+  const personId = req.params.id
+  
+  if (!personId) {
+    req.flash('error', 'Nenhum id de pessoa foi passado!')
+    res.redirect('/')
+    return;
+  }
+
+  try {
+    const [result] = await db.execute(`DELETE FROM person WHERE id=${personId}`)
+    if (result.affectedRows !== 1) {
+      req.flash('error', 'Pessoa não pôde ser removida >:c')
+    } else {
+      req.flash('success', 'A pessoa foi removida. :)')
+    }
+    
+  } catch (error) {
+    req.flash('error', `Erro desconhecido. Descrição: ${error}`)
+
+  } finally {
+    res.redirect('/people')
+  }
+
+})
+
+
 
 
 export default router
